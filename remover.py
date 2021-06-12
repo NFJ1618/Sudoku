@@ -7,6 +7,7 @@ import copy
 from time import time
 
 def remover(sudoku, difficulty):
+    solved = copy.deepcopy(sudoku)
     l = -1
     if random() < 0.5:
         l *= -1
@@ -37,6 +38,7 @@ def remover(sudoku, difficulty):
     for i in sudoku:
         print(i)
     print(remove)
+    return solved, sudoku
 
 
 def main(n):
@@ -58,11 +60,12 @@ def main(n):
     for i in temp:
         print(i)
     print("\n")
-    remover(temp, n)
+    solved, sudoku = remover(temp, n)
     end = time()
     print(end - start)
     print("\n")
+    return solved, sudoku
 
 
 if __name__ == '__main__':
-    main(5)
+    main(1)
