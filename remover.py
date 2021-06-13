@@ -42,7 +42,7 @@ def remover(sudoku, difficulty):
 
 
 def main(n):
-    start = time()
+    #start = time()
     sudoku = [
         [0] * 9,
         [0] * 9,
@@ -57,13 +57,15 @@ def main(n):
     temp = generator(copy.deepcopy(sudoku))
     while not temp:
         temp = generator(copy.deepcopy(sudoku))
+    """    
     for i in temp:
         print(i)
     print("\n")
+    """
     solved, sudoku = remover(temp, n)
-    end = time()
+    """end = time()
     print(end - start)
-    print("\n")
+    print("\n")"""
     return solved, sudoku
 
 
