@@ -17,17 +17,18 @@ class Square(Sprite):
         self.editable = not bool(self.display_number)
         self.selected = False
         self.annotations = [False]*10
-        self.highlight = self.settings.button_highlight
+
+        self.color = self.settings.button_color
 
         self.width = self.height = self.settings.square_size
         self.font = pygame.font.SysFont(None, 48)
         self.smaller_font = pygame.font.SysFont(None, 24)
 
         self.rect = pygame.Rect(0,0,self.width,self.height)
-        self.border_rect = pygame.Rect(0,0,self.width+12,self.height+12)
-        self.rect.top = self.settings.grid_spacing * (self.row + 1) + self.row * self.settings.square_size
-        self.rect.left = self.settings.grid_spacing * (self.col + 1) + self.col * self.settings.square_size
-        self.border_rect.center = self.rect.center
+        self.rect.top = (2 * self.settings.grid_spacing + (self.row + self.row // 3) * 
+            self.settings.grid_spacing + self.row * self.settings.square_size)
+        self.rect.left = (2 * self.settings.grid_spacing + (self.col + self.col // 3) * 
+            self.settings.grid_spacing + self.col * self.settings.square_size)
         
         self._update_number(str(self.display_number))
         self._add_annotations(0)
@@ -39,14 +40,12 @@ class Square(Sprite):
         if self.display_number == "0":
             self.display_number = ""
         self.msg_image = self.font.render(self.display_number, True, self.settings.text_color, 
-                self.settings.button_color)
+                self.color)
         self.msg_image_rect = self.msg_image.get_rect()
         self.msg_image_rect.center = self.rect.center
 
     def draw_square(self):
-        if self.selected:
-            self.screen.fill(self.highlight, self.border_rect)
-        self.screen.fill(self.settings.button_color, self.rect)
+        self.screen.fill(self.color, self.rect)
         
         for i in range(1,10):
             if self.annotations[i]:
@@ -57,16 +56,21 @@ class Square(Sprite):
 
     def _is_selected(self):
         self.selected = True
+        self.color = self.settings.button_selected
+        self._update_number(self.display_number)
+        self._add_annotations(0)
 
     def _is_deselected(self):
         self.selected = False
+        self.color = self.settings.button_color
+        self._update_number(self.display_number)
+        self._add_annotations(0)
 
     def _add_annotations(self, number):
-        if number == 0:
-            return
-        else:
+        """Pass 0 to this function to update annotation colors"""
+        if number != 0:
             self.annotations[number] = True
-        self.annotations_images = [self.smaller_font.render(str(i), True, self.settings.text_color, self.settings.button_color) 
+        self.annotations_images = [self.smaller_font.render(str(i), True, self.settings.text_color, self.color) 
         if self.annotations[i] else False for i in range(0, 10)]
         self.annotations_images_rect = [i.get_rect() if i else False for i in self.annotations_images]
         for i in range(1,10):
@@ -82,10 +86,14 @@ class Square(Sprite):
                     self.annotations_images_rect[i].bottom = self.rect.bottom
 
     def _highlight_right_click(self):
-        self.highlight = self.settings.button_highlight_2
+        self.color = self.settings.button_highlight_2
+        self._add_annotations(0)
+        self._update_number(self.display_number)
 
     def _remove_highlight_right_click(self):
-        self.highlight = self.settings.button_highlight
+        self.color = self.settings.button_selected
+        self._add_annotations(0)
+        self._update_number(self.display_number)
 
     def _deannotate(self):
         self.annotations = [False]*10

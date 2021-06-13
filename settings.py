@@ -11,5 +11,6 @@ class Settings:
         self.text_color = (0,0,0)
         self.button_highlight = (100,100,100)
         self.button_highlight_2 = (50, 150, 150)
-        self.grid_spacing = min(self.screen_width, self.screen_height) // 30
+        self.grid_color = (0,0,0)
+        self.grid_spacing = min(self.screen_width, self.screen_height) // 100
         self.square_size = min(self.screen_width, self.screen_height) // 10

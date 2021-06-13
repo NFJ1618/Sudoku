@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from time import time
 import pygame
 from remover import main
 from settings import Settings
@@ -11,13 +12,14 @@ from button import SmallerButton
 class Sudoku:
     """Overall class to manage game assests and behavior"""
 
+
     def __init__(self):
         pygame.init()
         self.settings = Settings()
         self.screen = pygame.display.set_mode((0,0), (pygame.FULLSCREEN))
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
-        self.settings.grid_spacing = min(self.settings.screen_width, self.settings.screen_height) // 50
+        self.settings.grid_spacing = min(self.settings.screen_width, self.settings.screen_height) // 100
         self.settings.square_size = min(self.settings.screen_width, self.settings.screen_height) // 12
         pygame.display.set_caption("Sudoku")
 
@@ -28,6 +30,7 @@ class Sudoku:
         self.difficulties = ["Baby", "Novice", "Easy", "Normal", "Hard", "Expert", "Evil"]
 
         self.new_game()
+
 
     def new_game(self):
         self.solved, self.unsolved = main(self.difficulty)
@@ -49,6 +52,10 @@ class Sudoku:
 
         self._create_grid()
         self._create_buttons()
+        self.grid_back = pygame.Rect(0,0,self.squares[8][8].rect.right + self.settings.grid_spacing * 2, 
+            self.squares[8][8].rect.bottom + self.settings.grid_spacing * 2)
+
+        self.start_time = time()
 
 
     def run_game(self):
@@ -56,6 +63,7 @@ class Sudoku:
             self._check_events()
 
             self._update_screen()
+
 
     def _check_events(self):
         #Watch for keyboard and mouse events
@@ -89,6 +97,7 @@ class Sudoku:
         elif self.button_new.rect.collidepoint(mouse_pos):
             self.new_game()
 
+
     def _check_squares(self, mouse_pos, event):
         for row in self.squares:
             for square in row:
@@ -97,6 +106,7 @@ class Sudoku:
                     new_annotated = True if event.button == 3 else False                    
                     self._change_selected_square(self.selected_square, square, old_annotated, new_annotated)
                     return
+
 
     def _change_selected_square(self, old_square, new_square, old_annotated, new_annotated):
         if old_square == new_square:
@@ -163,8 +173,10 @@ class Sudoku:
     def _check_keyup_events(self, event):
         pass
 
+
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
+        self.screen.fill(self.settings.grid_color, self.grid_back)
         for row in self.squares:
             for square in row:
                 square.draw_square()
@@ -172,17 +184,18 @@ class Sudoku:
             button.draw_button()
         pygame.display.flip()
 
+
     def _create_grid(self):
         for i in range(9):
             for j in range(9):
                 self.squares[i][j] = Square(self, i, j)
 
+
     def _create_buttons(self):
         self.button_reset = Button(self)
         self.button_reset.rect.bottom = self.squares[8][8].rect.bottom
-        self.button_reset.rect.left = self.squares[8][8].rect.right + 2 * self.settings.grid_spacing
+        self.button_reset.rect.left = self.squares[8][8].rect.right + 4 * self.settings.grid_spacing
         self.button_reset._prep_msg("Reset grid")
-
 
         self.button_reset_square = Button(self)
         self.button_reset_square.rect.bottom = self.button_reset.rect.top - self.settings.grid_spacing
@@ -227,6 +240,7 @@ class Sudoku:
         self.buttons = [self.button_new, self.button_reset, self.button_reset_square, self.button_reveal, self.button_reveal_square, 
         self.button_check, self.button_difficulty_raise, self.button_difficulty_lower, self.button_difficulty]
 
+
     def _check_solution(self, mouse_pos):
         if self.button_check.clicked:
             self.button_check.clicked = False
@@ -245,27 +259,33 @@ class Sudoku:
         if filled == 81 and mistakes == 0:
             self.button_check._prep_msg("Solved!")
         else:
-            self.button_check._prep_msg(f"{mistakes} mistakes")
+            mistake = "mistake" if mistakes == 1 else "mistakes"
+            self.button_check._prep_msg(f"{mistakes} {mistake}")
         
+
     def _reveal_solution(self):
         for row in self.squares:
             for square in row:
                 self._reveal_square(square)
+
 
     def _reveal_square(self, square):
         if square:
             square._deannotate()
             square._update_number(str(square.number))
 
+
     def _reset_square(self, square):
         if square and square.editable:
             square._deannotate()
             square._update_number("0")
     
+
     def _reset_solution(self):
         for row in self.squares:
             for square in row:
                 self._reset_square(square)
+
 
     def _update_difficulty(self, number):
         if number == 1:
@@ -278,22 +298,27 @@ class Sudoku:
             else: self.difficulty -= 1
         self.button_difficulty._prep_msg(f"Difficulty: {self.difficulties[self.difficulty]}")
 
+
     def _mark_annotated(self):
         if self.selected_square and self.selected_square.editable:
             self.annotating = True
             self.selected_square._highlight_right_click()
-            
     
+
     def _mark_deannotated(self):
         if self.selected_square:
             self.annotating = False
             self.selected_square._remove_highlight_right_click()
+
 
     def _remove_all_annotations(self):
        if self.selected_square:
            self.selected_square._deannotate()
 
 
+    def _get_current_time(self):
+        time_elapsed = round(time() - self.start_time, 1)
+        return time_elapsed
 
 
 
