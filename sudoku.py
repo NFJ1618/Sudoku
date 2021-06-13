@@ -5,6 +5,7 @@ from remover import main
 from settings import Settings
 from square import Square
 from button import Button
+from button import SmallerButton
 
 
 class Sudoku:
@@ -20,7 +21,16 @@ class Sudoku:
         self.settings.square_size = min(self.settings.screen_width, self.settings.screen_height) // 12
         pygame.display.set_caption("Sudoku")
 
-        self.solved, self.unsolved = main(0)
+        self.keys = [
+            pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9
+        ]
+        self.difficulty = 0
+        self.difficulties = ["Baby", "Novice", "Easy", "Normal", "Hard", "Expert", "Evil"]
+
+        self.new_game()
+
+    def new_game(self):
+        self.solved, self.unsolved = main(self.difficulty)
 
         self.squares = [
         [0] * 9,
@@ -34,14 +44,11 @@ class Sudoku:
         [0] * 9,
         ]
 
+
         self.selected_square = None
 
-        self.keys = [
-            pygame.K_0, pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9
-        ]
         self._create_grid()
         self._create_buttons()
-
 
 
     def run_game(self):
@@ -75,8 +82,12 @@ class Sudoku:
             self._reveal_solution()
         elif self.button_reveal_square.rect.collidepoint(mouse_pos):
             self._reveal_square(self.selected_square)
+        elif self.button_difficulty_lower.rect.collidepoint(mouse_pos):
+            self._update_difficulty(-1)
+        elif self.button_difficulty_raise.rect.collidepoint(mouse_pos):
+            self._update_difficulty(1)
         elif self.button_new.rect.collidepoint(mouse_pos):
-            pass
+            self.new_game()
 
     def _check_squares(self, mouse_pos):
         for row in self.squares:
@@ -162,6 +173,11 @@ class Sudoku:
         self.button_check.rect.left = self.button_reset.rect.left
         self.button_check._prep_msg("Check solution")
 
+        self.button_new = Button(self)
+        self.button_new.rect.bottom = self.button_check.rect.top - self.settings.grid_spacing
+        self.button_new.rect.left = self.button_check.rect.left
+        self.button_new._prep_msg("New game")
+
         self.button_reveal = Button(self)
         self.button_reveal.rect.bottom = self.button_reset.rect.bottom
         self.button_reveal.rect.left = self.button_reset.rect.right + self.settings.grid_spacing
@@ -172,12 +188,23 @@ class Sudoku:
         self.button_reveal_square.rect.left = self.button_reveal.rect.left
         self.button_reveal_square._prep_msg("Reveal current")
 
-        self.button_new = Button(self)
-        self.button_new.rect.bottom = self.button_reveal_square.rect.top - self.settings.grid_spacing
-        self.button_new.rect.left = self.button_reveal.rect.left
-        self.button_new._prep_msg("New game")
+        self.button_difficulty_lower = SmallerButton(self)
+        self.button_difficulty_lower.rect.bottom = self.button_reveal_square.rect.top - self.settings.grid_spacing
+        self.button_difficulty_lower.rect.left = self.button_reveal.rect.left
+        self.button_difficulty_lower._prep_msg("Lower level")
 
-        self.buttons = [self.button_new, self.button_reset, self.button_reset_square, self.button_reveal, self.button_reveal_square, self.button_check]
+        self.button_difficulty_raise = SmallerButton(self)
+        self.button_difficulty_raise.rect.bottom = self.button_difficulty_lower.rect.bottom
+        self.button_difficulty_raise.rect.right = self.button_reveal.rect.right
+        self.button_difficulty_raise._prep_msg("Raise level")
+
+        self.button_difficulty = Button(self)
+        self.button_difficulty.rect.bottom = self.button_difficulty_lower.rect.top - self.settings.grid_spacing
+        self.button_difficulty.rect.left = self.button_reveal.rect.left
+        self.button_difficulty._prep_msg(f"Difficulty: {self.difficulties[self.difficulty]}")
+
+        self.buttons = [self.button_new, self.button_reset, self.button_reset_square, self.button_reveal, self.button_reveal_square, 
+        self.button_check, self.button_difficulty_raise, self.button_difficulty_lower, self.button_difficulty]
 
     def _check_solution(self, mouse_pos):
         if self.button_check.clicked:
@@ -216,6 +243,17 @@ class Sudoku:
         for row in self.squares:
             for square in row:
                 self._reset_square(square)
+
+    def _update_difficulty(self, number):
+        if number == 1:
+            if self.difficulty + number > 6:
+                return
+            else: self.difficulty += 1
+        elif number == -1:
+            if self.difficulty + number < 0:
+                return
+            else: self.difficulty -= 1
+        self.button_difficulty._prep_msg(f"Difficulty: {self.difficulties[self.difficulty]}")
 
 
 

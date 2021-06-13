@@ -24,3 +24,11 @@ class Button():
     def draw_button(self):
         self.screen.fill(self.settings.button_color, self.rect)
         self.screen.blit(self.msg_image, self.msg_image_rect)
+
+
+class SmallerButton(Button):
+    def __init__(self, ai_game):
+        super().__init__(ai_game)
+        self.width, self.height = 140, 100
+        self.font = pygame.font.SysFont(None, 24)
+        self.rect = pygame.Rect(0,0,self.width,self.height)
