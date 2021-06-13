@@ -44,8 +44,8 @@ class Sudoku:
         [0] * 9,
         ]
 
-
         self.selected_square = None
+        self.annotating = False
 
         self._create_grid()
         self._create_buttons()
@@ -64,7 +64,7 @@ class Sudoku:
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                self._check_squares(mouse_pos)
+                self._check_squares(mouse_pos, event)
                 self._check_buttons(mouse_pos)
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -89,19 +89,34 @@ class Sudoku:
         elif self.button_new.rect.collidepoint(mouse_pos):
             self.new_game()
 
-    def _check_squares(self, mouse_pos):
+    def _check_squares(self, mouse_pos, event):
         for row in self.squares:
             for square in row:
                 if square.rect.collidepoint(mouse_pos):
-                    if self.selected_square:
-                        self.selected_square._is_deselected()
-                    if square == self.selected_square:
-                        self.selected_square._is_deselected()
-                        self.selected_square = None
-                        return
-                    self.selected_square = square
-                    self.selected_square._is_selected()
+                    old_annotated = self.annotating
+                    new_annotated = True if event.button == 3 else False                    
+                    self._change_selected_square(self.selected_square, square, old_annotated, new_annotated)
                     return
+
+    def _change_selected_square(self, old_square, new_square, old_annotated, new_annotated):
+        if old_square == new_square:
+            if old_annotated != new_annotated:
+                if old_annotated == True:
+                    self._deannotate_square()
+                else:
+                    self._annotate_square()
+            else:
+                self.selected_square._is_deselected()
+                self.selected_square = None
+            return
+        if old_annotated:
+            self._deannotate_square()
+        if old_square:
+            old_square._is_deselected()
+        self.selected_square = new_square
+        self.selected_square._is_selected()
+        if new_annotated:
+            self._annotate_square()
 
 
     def _check_keydown_events(self, event):
@@ -109,35 +124,36 @@ class Sudoku:
             sys.exit()
         elif event.key in self.keys:
             if self.selected_square and self.selected_square.editable:
-                self.selected_square._update_number(str(self.keys.index(event.key)))
+                if not self.annotating:
+                    self.selected_square._update_number(str(self.keys.index(event.key)))
+                else:
+                    self.selected_square._add_annotations(self.keys.index(event.key))
         elif event.key == pygame.K_UP:
             if self.selected_square:
                 row = (self.selected_square.row + 8) % 9
                 col = self.selected_square.col
-                self.selected_square._is_deselected()
-                self.selected_square = self.squares[row][col]
-                self.selected_square._is_selected()
+                self._change_selected_square(self.selected_square, self.squares[row][col], self.annotating, False)
         elif event.key == pygame.K_DOWN:
             if self.selected_square:
                 row = (self.selected_square.row + 1) % 9
                 col = self.selected_square.col
-                self.selected_square._is_deselected()
-                self.selected_square = self.squares[row][col]
-                self.selected_square._is_selected()
+                self._change_selected_square(self.selected_square, self.squares[row][col], self.annotating, False)
         elif event.key == pygame.K_LEFT:
             if self.selected_square:
                 row = self.selected_square.row
                 col = (self.selected_square.col + 8) % 9
-                self.selected_square._is_deselected()
-                self.selected_square = self.squares[row][col]
-                self.selected_square._is_selected()
+                self._change_selected_square(self.selected_square, self.squares[row][col], self.annotating, False)
         elif event.key == pygame.K_RIGHT:
             if self.selected_square:
                 row = self.selected_square.row
                 col = (self.selected_square.col + 1) % 9
-                self.selected_square._is_deselected()
-                self.selected_square = self.squares[row][col]
-                self.selected_square._is_selected()
+                self._change_selected_square(self.selected_square, self.squares[row][col], self.annotating, False)
+        elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
+            if self.selected_square and self.selected_square.editable:
+                self.selected_square._update_number(str(0))
+        elif event.key == pygame.K_SPACE:
+            self._change_selected_square(self.selected_square, self.selected_square, self.annotating, not self.annotating)
+
 
     def _check_keyup_events(self, event):
         pass
@@ -255,8 +271,16 @@ class Sudoku:
             else: self.difficulty -= 1
         self.button_difficulty._prep_msg(f"Difficulty: {self.difficulties[self.difficulty]}")
 
-
-
+    def _annotate_square(self):
+        if self.selected_square:
+            self.annotating = True
+            self.selected_square._annotate()
+            
+    
+    def _deannotate_square(self):
+        if self.selected_square:
+            self.annotating = False
+            self.selected_square._deannotate()
 
 
 
