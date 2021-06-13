@@ -35,9 +35,9 @@ def remover(sudoku, difficulty):
         if steps > 200:
             break
 
-    for i in sudoku:
+    """for i in sudoku:
         print(i)
-    print(remove)
+    print(remove)"""
     return solved, sudoku
 
 
