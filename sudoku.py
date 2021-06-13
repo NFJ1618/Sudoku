@@ -102,21 +102,21 @@ class Sudoku:
         if old_square == new_square:
             if old_annotated != new_annotated:
                 if old_annotated == True:
-                    self._deannotate_square()
+                    self._mark_deannotated()
                 else:
-                    self._annotate_square()
+                    self._mark_annotated()
             else:
                 self.selected_square._is_deselected()
                 self.selected_square = None
             return
         if old_annotated:
-            self._deannotate_square()
+            self._mark_deannotated()
         if old_square:
             old_square._is_deselected()
         self.selected_square = new_square
         self.selected_square._is_selected()
         if new_annotated:
-            self._annotate_square()
+            self._mark_annotated()
 
 
     def _check_keydown_events(self, event):
@@ -271,16 +271,19 @@ class Sudoku:
             else: self.difficulty -= 1
         self.button_difficulty._prep_msg(f"Difficulty: {self.difficulties[self.difficulty]}")
 
-    def _annotate_square(self):
-        if self.selected_square:
+    def _mark_annotated(self):
+        if self.selected_square and self.selected_square.editable:
             self.annotating = True
-            self.selected_square._annotate()
+            self.selected_square._highlight_right_click()
             
     
-    def _deannotate_square(self):
+    def _mark_deannotated(self):
         if self.selected_square:
             self.annotating = False
-            self.selected_square._deannotate()
+            self.selected_square._remove_highlight_right_click()
+
+    def _remove_all_annotations(self):
+       self.selected_square.
 
 
 
