@@ -87,3 +87,11 @@ class Square(Sprite):
     def _remove_highlight_right_click(self):
         self.highlight = self.settings.button_highlight
 
+    def _deannotate(self):
+        self.annotations = [False]*10
+        
+    def _remove_one_annotation(self):
+        for i in range(0, 10):
+            if self.annotations[9-i]:
+                self.annotations[9-i] = False
+                return

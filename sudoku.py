@@ -125,8 +125,10 @@ class Sudoku:
         elif event.key in self.keys:
             if self.selected_square and self.selected_square.editable:
                 if not self.annotating:
+                    self._remove_all_annotations()
                     self.selected_square._update_number(str(self.keys.index(event.key)))
                 else:
+                    self.selected_square._update_number(str(0))
                     self.selected_square._add_annotations(self.keys.index(event.key))
         elif event.key == pygame.K_UP:
             if self.selected_square:
@@ -150,7 +152,10 @@ class Sudoku:
                 self._change_selected_square(self.selected_square, self.squares[row][col], self.annotating, False)
         elif event.key == pygame.K_DELETE or event.key == pygame.K_BACKSPACE:
             if self.selected_square and self.selected_square.editable:
-                self.selected_square._update_number(str(0))
+                if not self.annotating:
+                    self.selected_square._update_number(str(0))
+                else:
+                    self.selected_square._remove_one_annotation()
         elif event.key == pygame.K_SPACE:
             self._change_selected_square(self.selected_square, self.selected_square, self.annotating, not self.annotating)
 
@@ -207,12 +212,12 @@ class Sudoku:
         self.button_difficulty_lower = SmallerButton(self)
         self.button_difficulty_lower.rect.bottom = self.button_reveal_square.rect.top - self.settings.grid_spacing
         self.button_difficulty_lower.rect.left = self.button_reveal.rect.left
-        self.button_difficulty_lower._prep_msg("Lower level")
+        self.button_difficulty_lower._prep_msg("-")
 
         self.button_difficulty_raise = SmallerButton(self)
         self.button_difficulty_raise.rect.bottom = self.button_difficulty_lower.rect.bottom
         self.button_difficulty_raise.rect.right = self.button_reveal.rect.right
-        self.button_difficulty_raise._prep_msg("Raise level")
+        self.button_difficulty_raise._prep_msg("+")
 
         self.button_difficulty = Button(self)
         self.button_difficulty.rect.bottom = self.button_difficulty_lower.rect.top - self.settings.grid_spacing
@@ -249,10 +254,12 @@ class Sudoku:
 
     def _reveal_square(self, square):
         if square:
+            square._deannotate()
             square._update_number(str(square.number))
 
     def _reset_square(self, square):
         if square and square.editable:
+            square._deannotate()
             square._update_number("0")
     
     def _reset_solution(self):
@@ -283,7 +290,8 @@ class Sudoku:
             self.selected_square._remove_highlight_right_click()
 
     def _remove_all_annotations(self):
-       self.selected_square.
+       if self.selected_square:
+           self.selected_square._deannotate()
 
 
 

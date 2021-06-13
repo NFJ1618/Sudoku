@@ -30,5 +30,5 @@ class SmallerButton(Button):
     def __init__(self, ai_game):
         super().__init__(ai_game)
         self.width, self.height = 140, 100
-        self.font = pygame.font.SysFont(None, 24)
+        self.font = pygame.font.SysFont(None, 70)
         self.rect = pygame.Rect(0,0,self.width,self.height)
