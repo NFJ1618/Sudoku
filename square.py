@@ -81,8 +81,9 @@ class Square(Sprite):
                 if i == 7 or i == 8 or i == 9:
                     self.annotations_images_rect[i].bottom = self.rect.bottom
 
-    def _annotate(self):
+    def _highlight_right_click(self):
         self.highlight = self.settings.button_highlight_2
 
-    def _deannotate(self):
+    def _remove_highlight_right_click(self):
         self.highlight = self.settings.button_highlight
+
